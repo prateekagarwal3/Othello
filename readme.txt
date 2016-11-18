@@ -1,1 +1,0 @@
-This repository contains the code for the game Multiplayer Code build in OpenGL Library
