@@ -70,6 +70,14 @@ void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
 	for(int i = 0; i<DIMENSION; i++) {
+		bool dark;
+		if(i%2==0) {	
+			dark = true;
+			glColor3f(0.14509803921, 0.41176470588, 0.15294117647);
+		} else {
+			dark = false;
+			glColor3f(0.11764705882, 0.58823529411, 0.13333333333);
+		}
 		for(int j = 0; j<DIMENSION; j++) {
 			glBegin(GL_POLYGON);
 				glVertex2f(vertices[i][j][0], vertices[i][j][1]);
@@ -93,6 +101,13 @@ void display(void) {
 				glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
 				DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, false);
 				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
+			}
+			if(dark) {
+				dark = false;
+				glColor3f(0.11764705882, 0.58823529411, 0.13333333333);
+			} else {
+				dark = true;
+				glColor3f(0.14509803921, 0.41176470588, 0.15294117647);
 			}
 		}
 	}
