@@ -144,15 +144,19 @@ void mouseHover(int x, int y) {
 	actualLocation(x, y, mouseX, mouseY, mouseZ);
 	if(mouseX > 835.0 || mouseY > 835.0)
 		return;
-	int i = 0, j = 0;
-	while(i<DIMENSION && mouseX > vertices[0][i][2])      // x is greater than the right x coordinate of the element
-		i++;
-	while(j<DIMENSION && mouseY > vertices[j][0][3])
+	int i = 7, j = 0;
+	while(j<DIMENSION && mouseX > vertices[0][j][2])      // x is greater than the right x coordinate of the element
 		j++;
+	while(i>=0 && mouseY > vertices[i][0][3])
+		i--;
 	// cout << x << " " << y << " " << i << " " << j << endl;
-	cout << mouseX << " " << mouseY << " " << i << " " << j << endl;
-	if(nextMove[i][j] != 0 && !(displayNextMove && nextMoveX == i && nextMoveY == j && nextMoveColor == 
-															(nextMove[i][j]==1)?true:false)) {
+	//cout << mouseX << " " << mouseY << " " << i << " " << j << endl;
+	if(i<0 || i>7 || j<0 || j>7)
+		return;
+	if( nextMove[i][j] != 0) {
+		if(displayNextMove && nextMoveX == i && nextMoveY == j 
+			&& nextMoveColor == (nextMove[i][j]==1)?true:false)
+			return;
 		displayNextMove = true;
 		nextMoveX = i;
 		nextMoveY = j;
