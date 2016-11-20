@@ -1,5 +1,6 @@
 #include <GL/glut.h>
 #include <bits/stdc++.h>
+#include <time.h>
 #define DIMENSION 8
 #define BIG_RADIUS 33.0
 #define SMALL_RADIUS 20.0
@@ -127,6 +128,7 @@ void display(void) {
 		DrawCircle(centres[nextMoveX][nextMoveY][0], centres[nextMoveX][nextMoveY][1], SMALL_RADIUS, 1000, nextMoveColor);
 	}
 	glutSwapBuffers();
+	// glFlush();
 }
 
 void actualLocation(int a, int b, GLdouble &x, GLdouble &y, GLdouble &z) {
@@ -165,10 +167,10 @@ void mouseHover(int x, int y) {
 		nextMoveX = i;
 		nextMoveY = j;
 		nextMoveColor = (nextMove[i][j] == 1)? true:false;
-		glutPostRedisplay();
+		display();
 	} else if(displayNextMove) {
 		displayNextMove = false;
-		glutPostRedisplay();
+		display();
 	}
 }
 
@@ -190,7 +192,7 @@ void mouseClick(int button, int mouse_state, int x, int y) {
 	currPlayer = 1;  //disable showing of next moves
 	displayNextMove = false;
 	playMove(state, DIMENSION, 2, i, j);
-	glutPostRedisplay();
+	display();
 
 	v2i copy(DIMENSION, vector<int> (DIMENSION));  //unused
 	int humanMoves, compMoves;
@@ -203,13 +205,16 @@ void mouseClick(int button, int mouse_state, int x, int y) {
 			exit(0);
 		}
 		
-			
+		if(nanosleep((const struct timespec[]){{0, 500000000L}}, NULL) < 0)   
+	    {
+	  		printf("Nano sleep system call failed \n");
+	    	exit(0);
+	    }
+	    glutIdleFunc(NULL);
 		minimaxDecision(state, DIMENSION, 1, DEPTH);  //changes state
 
 		loadNextMoves(state, DIMENSION, 2, nextMove, humanMoves); // loading the next available moves
-		printState(state, DIMENSION);
-		cout << humanMoves << endl;
-		glutPostRedisplay();
+		display();
 		currPlayer = 2;      //allows next moves to be shown
 	} while(humanMoves == 0);
 }
@@ -228,7 +233,7 @@ void reshape(int w, int h) {
 
 int main(int argc, char ** argv) {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowSize(550,550);
 	glutInitWindowPosition(100,100);
 	glutCreateWindow("Othello Game");
