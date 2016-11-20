@@ -102,15 +102,6 @@ void display(void) {
 				DrawCircle(centres[i][j][0], centres[i][j][1], BIG_RADIUS, 2000, false);
 				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
 			} 
-			// else if(nextMove[i][j] == 1) {
-			// 	glColor3f(0.5294117647, 0.5294117647, 0.5294117647);
-			// 	DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, true);
-			// 	glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
-			// } else if(nextMove[i][j] == 2) {
-			// 	glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
-			// 	DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, false);
-			// 	glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
-			// }
 			if(dark) {
 				dark = false;
 				glColor3f(0.11764705882, 0.58823529411, 0.13333333333);
@@ -128,7 +119,6 @@ void display(void) {
 		DrawCircle(centres[nextMoveX][nextMoveY][0], centres[nextMoveX][nextMoveY][1], SMALL_RADIUS, 1000, nextMoveColor);
 	}
 	glutSwapBuffers();
-	// glFlush();
 }
 
 void actualLocation(int a, int b, GLdouble &x, GLdouble &y, GLdouble &z) {
@@ -156,7 +146,6 @@ void mouseHover(int x, int y) {
 		j++;
 	while(i>=0 && mouseY > vertices[i][0][3])
 		i--;
-	//cout << mouseX << " " << mouseY << " " << i << " " << j << endl;
 	if(i<0 || i>7 || j<0 || j>7)
 		return;
 	if( nextMove[i][j] != 0) {

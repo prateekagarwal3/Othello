@@ -57,7 +57,6 @@ int corner(const v2i &board, const int size, const int player) {
 double eval(const v2i &board, const int size) {
 	vector<vector<bool> > moveToMax(size, vector<bool>(size, false));
 	vector<vector<bool> > moveToMin(size, vector<bool>(size, false));
-	// set<pair<int,int> > indMax, indMin;
 	int moveMax = 0, moveMin = 0, diskMax = 0, diskMin = 0;
 	for(int i = 0; i<size; i++) {
 		for(int j = 0; j<size; j++) {
@@ -76,7 +75,6 @@ double eval(const v2i &board, const int size) {
 								moveMax++;
 								moveToMax[next_i][next_j] = true;
 							}
-							// indMax.insert(mp(next_i, next_j));
 							break;
 						}
 						next_i += dx[direct];
@@ -95,7 +93,6 @@ double eval(const v2i &board, const int size) {
 								moveMin++;
 								moveToMin[next_i][next_j] = true;
 							}
-							// indMin.insert(mp(next_i, next_j));
 							break;
 						}
 						next_i += dx[direct];
@@ -105,14 +102,10 @@ double eval(const v2i &board, const int size) {
 			}
 		}
 	}
-	// moveMax = indMax.size();
-	// moveMin = indMin.size();
 	int cornerMax = corner(board, size, MAX), cornerMin = corner(board, size, MIN);
 	double Disks = ((double)(diskMax - diskMin))/((double)(diskMax+diskMin));
 	double Moves = (moveMax + moveMin != 0)? ((double)(moveMax - moveMin))/((double)(moveMax+moveMin)) : 0;
 	double Corners = (cornerMax + cornerMin != 0)? ((double)(cornerMax - cornerMin))/((double)(cornerMax+cornerMin)) : 0;
-	// cout << "DISKS : " << diskMax << " " << diskMin << endl;
-	// cout << "MOVES : " << moveMax << " " << moveMin << endl;
 	return Disks + 100*Moves + 1000*Corners;
 }
 
@@ -182,7 +175,6 @@ double myValue(const v2i &state, const int size, const int depth, const int maxD
 			}
 		}
 	}
-	// sort(moveLocation.begin(), moveLocation.end());
 	for(set<pair<int,int> >::iterator it = moveLocation.begin(); it!= moveLocation.end(); it++) {
 		v2i copy = state;
 		int i = it->first, j = it->second;
@@ -268,32 +260,3 @@ void minimaxDecision(v2i &state, const int size, const int player, const int max
 	myValue(state, size, 1, maxDepth, ret, player, INT_MIN, INT_MAX);
 	state = ret;
 }
-
-
- 
-// int main() {
-// 	int t, size, m, d;
-// 	scanf("%d", &t);
-// 	while(t--) {
-// 		scanf("%d", &size);
-// 		v2i state(size, vector<int>(size));
-// 		for(int i = 0; i<size; i++) {
-// 			for(int j = 0; j<size; j++) {
-// 				scanf("%d", &state[i][j]);
-// 			}
-// 		}
-// 		scanf("%d%d", &m, &d);
-// 		//cout << moves(state, size, MAX) << endl;
-// 		// printState(minimaxDecision(state, size, MIN, d), size);
-		
-// 		int player = MAX;
-// 		while(m--) {
-// 			state = minimaxDecision(state, size, player, d);
-// 			printState(state, size);
-// 			player = (player == MAX)? MIN : MAX;
-// 		}
- 
-// 		// cout << eval(state, size) << endl;
-// 	}
-// 	return 0;
-// }
