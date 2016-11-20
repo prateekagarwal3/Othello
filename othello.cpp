@@ -1,8 +1,8 @@
 #include <GL/glut.h>
-#include <bits/stdc++.h>
+// #include <bits/stdc++.h>
 #define DIMENSION 8
 #define BIG_RADIUS 33.0
-#define SMALL_RADIUS 15.0
+#define SMALL_RADIUS 20.0
 #include "ai.h"
 
 using namespace std;
@@ -14,6 +14,8 @@ v2i nextMove(DIMENSION, vector<int> (DIMENSION, 0));
 bool displayNextMove = false;
 int nextMoveX, nextMoveY;
 bool nextMoveColor;
+
+int currPlayer;
 
 const GLfloat vertices[DIMENSION][DIMENSION][4] = {  {{0.0,735.0,100.0,835.0},{105.0,735.0,205.0,835.0},{210.0,735.0,310.0,835.0},{315.0,735.0,415.0,835.0},{420.0,735.0,520.0,835.0},{525.0,735.0,625.0,835.0},{630.0,735.0,730.0,835.0},{735.0,735.0,835.0,835.0}},
 													 {{0.0,630.0,100.0,730.0},{105.0,630.0,205.0,730.0},{210.0,630.0,310.0,730.0},{315.0,630.0,415.0,730.0},{420.0,630.0,520.0,730.0},{525.0,630.0,625.0,730.0},{630.0,630.0,730.0,730.0},{735.0,630.0,835.0,730.0}},
@@ -149,7 +151,6 @@ void mouseHover(int x, int y) {
 		j++;
 	while(i>=0 && mouseY > vertices[i][0][3])
 		i--;
-	// cout << x << " " << y << " " << i << " " << j << endl;
 	//cout << mouseX << " " << mouseY << " " << i << " " << j << endl;
 	if(i<0 || i>7 || j<0 || j>7)
 		return;
@@ -190,10 +191,14 @@ int main(int argc, char ** argv) {
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutPassiveMotionFunc(mouseHover);
-	state[0][0] = 1;
-	state[0][1] = 2;
-	nextMove[0][3] = 1;
-	nextMove[0][4] = 2;
+	state[3][3] = 1;
+	state[3][4] = 2;
+	state[4][3] = 2;
+	state[4][4] = 1;
+	currPlayer = 2;
+
+	int unused;  //for next function call
+	loadNextMoves(state, DIMENSION, currPlayer, nextMove, unused);
 	glutMainLoop();
 	return 0;
 }
