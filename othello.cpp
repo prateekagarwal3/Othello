@@ -3,6 +3,7 @@
 #define DIMENSION 8
 #define BIG_RADIUS 33.0
 #define SMALL_RADIUS 20.0
+#define DEPTH 5
 #include "ai.h"
 
 using namespace std;
@@ -186,10 +187,31 @@ void mouseClick(int button, int mouse_state, int x, int y) {
 	if(i<0 || i>7 || j<0 || j>7 || nextMove[i][j] != 2)
 		return;
 
-	currPlayer = 1;
+	currPlayer = 1;  //disable showing of next moves
 	displayNextMove = false;
 	playMove(state, DIMENSION, 2, i, j);
 	glutPostRedisplay();
+
+	v2i copy(DIMENSION, vector<int> (DIMENSION));  //unused
+	int humanMoves, compMoves;
+	loadNextMoves(state, DIMENSION, 2, copy, humanMoves);  //precomputing human moves for this state
+
+	//number of availabe human moves is always 0 in this do-while loop (except in the first case)
+	do {
+		loadNextMoves(state, DIMENSION, 1, copy, compMoves);
+		if(humanMoves == 0 && compMoves == 0) { //end the program if no moves are left for either player
+			exit(0);
+		}
+		
+			
+		minimaxDecision(state, DIMENSION, 1, DEPTH);  //changes state
+
+		loadNextMoves(state, DIMENSION, 2, nextMove, humanMoves); // loading the next available moves
+		printState(state, DIMENSION);
+		cout << humanMoves << endl;
+		glutPostRedisplay();
+		currPlayer = 2;      //allows next moves to be shown
+	} while(humanMoves == 0);
 }
 
 void reshape(int w, int h) {

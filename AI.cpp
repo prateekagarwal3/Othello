@@ -263,10 +263,10 @@ void playMove(v2i &state, const int size, const int player, const int i, const i
 	state = copy;
 }
  
-v2i minimaxDecision(const v2i &state, const int size, const int player, const int maxDepth) {
+void minimaxDecision(v2i &state, const int size, const int player, const int maxDepth) {
 	v2i ret = state;
 	myValue(state, size, 1, maxDepth, ret, player, INT_MIN, INT_MAX);
-	return ret;
+	state = ret;
 }
 
 
