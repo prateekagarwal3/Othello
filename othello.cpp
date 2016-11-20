@@ -6,7 +6,6 @@
 using namespace std;
 
 typedef vector<vector<int> > v2i;
-typedef vector<vector<vector<int> > > v3i;
 
 v2i state(DIMENSION, vector<int> (DIMENSION, EMPTY));
 const GLfloat vertices[DIMENSION][DIMENSION][4] = {  {{0.0,735.0,100.0,835.0},{105.0,735.0,205.0,835.0},{210.0,735.0,310.0,835.0},{315.0,735.0,415.0,835.0},{420.0,735.0,520.0,835.0},{525.0,735.0,625.0,835.0},{630.0,735.0,730.0,835.0},{735.0,735.0,835.0,835.0}},
@@ -19,12 +18,59 @@ const GLfloat vertices[DIMENSION][DIMENSION][4] = {  {{0.0,735.0,100.0,835.0},{1
 													 {{0.0,0.0,100.0,100.0},{105.0,0.0,205.0,100.0},{210.0,0.0,310.0,100.0},{315.0,0.0,415.0,100.0},{420.0,0.0,520.0,100.0},{525.0,0.0,625.0,100.0},{630.0,0.0,730.0,100.0},{735.0,0.0,835.0,100.0}}
 												 };
 
+const GLfloat centres[DIMENSION][DIMENSION][2] ={ {{50.0,785.0},{155.0,785.0},{260.0,785.0},{365.0,785.0},{470.0,785.0},{575.0,785.0},{680.0,785.0},{785.0,785.0}},
+												  {{50.0,680.0},{155.0,680.0},{260.0,680.0},{365.0,680.0},{470.0,680.0},{575.0,680.0},{680.0,680.0},{785.0,680.0}},
+												  {{50.0,575.0},{155.0,575.0},{260.0,575.0},{365.0,575.0},{470.0,575.0},{575.0,575.0},{680.0,575.0},{785.0,575.0}},
+												  {{50.0,470.0},{155.0,470.0},{260.0,470.0},{365.0,470.0},{470.0,470.0},{575.0,470.0},{680.0,470.0},{785.0,470.0}},
+												  {{50.0,365.0},{155.0,365.0},{260.0,365.0},{365.0,365.0},{470.0,365.0},{575.0,365.0},{680.0,365.0},{785.0,365.0}},
+												  {{50.0,260.0},{155.0,260.0},{260.0,260.0},{365.0,260.0},{470.0,260.0},{575.0,260.0},{680.0,260.0},{785.0,260.0}},
+												  {{50.0,155.0},{155.0,155.0},{260.0,155.0},{365.0,155.0},{470.0,155.0},{575.0,155.0},{680.0,155.0},{785.0,155.0}},
+												  {{50.0,50.0},{155.0,50.0},{260.0,50.0},{365.0,50.0},{470.0,50.0},{575.0,50.0},{680.0,50.0},{785.0,50.0}}
+												};
 void init(void) {
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glShadeModel(GL_SMOOTH);
 }
 
-void display() {
+void DrawCircle(GLfloat cx, GLfloat cy, int toDraw) {
+	GLfloat r;
+	int num_segments;
+	if(toDraw == 1 || toDraw == 3) {
+		glColor3f(0.91372549019, 0.94901960784, 0.83529411764);
+		r = (toDraw == 1)?40.0:20.0;
+		num_segments = (toDraw == 1)? 1000:500;
+	}
+	else {
+		glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
+		r = (toDraw == 2)?40.0:20.0;
+		num_segments = (toDraw == 2)? 1000:500;
+	}
+	float theta = 2 * 3.1415926 / (GLfloat)num_segments; 
+	float tangetial_factor = tanf(theta);//calculate the tangential factor 
+	float radial_factor = cosf(theta);//calculate the radial factor 	
+	GLfloat x = r;//we start at angle = 0 
+	GLfloat y = 0; 
+    
+	glBegin(GL_POLYGON); 
+	for(int ii = 0; ii < num_segments; ii++) 
+	{ 
+		glVertex2f(x + cx, y + cy);//output vertex 
+		//calculate the tangential vector 
+		//remember, the radial vector is (x, y) 
+		//to get the tangential vector we flip those coordinates and negate one of them 
+		float tx = -y; 
+		float ty = x; 
+		//add the tangential vector 
+		x += tx * tangetial_factor; 
+		y += ty * tangetial_factor; 
+		//correct using the radial factor 
+		x *= radial_factor; 
+		y *= radial_factor; 
+	} 
+	glEnd(); 
+}
+
+void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
 	for(int i = 0; i<DIMENSION; i++) {
@@ -35,6 +81,10 @@ void display() {
 				glVertex2f(vertices[i][j][2], vertices[i][j][3]);
 				glVertex2f(vertices[i][j][2], vertices[i][j][1]);
 			glEnd();
+			if(state[i][j] != 0) {
+				DrawCircle(centres[i][j][0], centres[i][j][1], state[i][j]);
+				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
+			}
 		}
 	}
 	glutSwapBuffers();
@@ -45,9 +95,9 @@ void reshape(int w, int h) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	if (w <= h)
- 		gluOrtho2D (0.0, 835.0, 0.0, 835.0*(GLfloat) h/(GLfloat) w);
+ 		gluOrtho2D(0.0, 835.0, 0.0, 835.0*(GLfloat) h/(GLfloat) w);
  	else
- 		gluOrtho2D (0.0, 835.0*(GLfloat) w/(GLfloat) h, 0.0, 835.0);
+ 		gluOrtho2D(0.0, 835.0*(GLfloat) w/(GLfloat) h, 0.0, 835.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -61,6 +111,10 @@ int main(int argc, char ** argv) {
 	init();
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
+	state[0][0] = 1;
+	state[0][1] = 2;
+	state[0][3] = 3;
+	state[0][4] = 4;
 	glutMainLoop();
 	return 0;
 }
