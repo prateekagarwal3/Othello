@@ -1,13 +1,16 @@
 #include <GL/glut.h>
 #include <bits/stdc++.h>
 #define DIMENSION 8
+#define BIG_RADIUS 33.0
+#define SMALL_RADIUS 15.0
 #include "ai.h"
 
 using namespace std;
 
 typedef vector<vector<int> > v2i;
 
-v2i state(DIMENSION, vector<int> (DIMENSION, EMPTY));
+v2i state(DIMENSION, vector<int> (DIMENSION, 0));
+v2i nextMove(DIMENSION, vector<int> (DIMENSION, 0));
 const GLfloat vertices[DIMENSION][DIMENSION][4] = {  {{0.0,735.0,100.0,835.0},{105.0,735.0,205.0,835.0},{210.0,735.0,310.0,835.0},{315.0,735.0,415.0,835.0},{420.0,735.0,520.0,835.0},{525.0,735.0,625.0,835.0},{630.0,735.0,730.0,835.0},{735.0,735.0,835.0,835.0}},
 													 {{0.0,630.0,100.0,730.0},{105.0,630.0,205.0,730.0},{210.0,630.0,310.0,730.0},{315.0,630.0,415.0,730.0},{420.0,630.0,520.0,730.0},{525.0,630.0,625.0,730.0},{630.0,630.0,730.0,730.0},{735.0,630.0,835.0,730.0}},
 													 {{0.0,525.0,100.0,625.0},{105.0,525.0,205.0,625.0},{210.0,525.0,310.0,625.0},{315.0,525.0,415.0,625.0},{420.0,525.0,520.0,625.0},{525.0,525.0,625.0,625.0},{630.0,525.0,730.0,625.0},{735.0,525.0,835.0,625.0}},
@@ -32,26 +35,15 @@ void init(void) {
 	glShadeModel(GL_SMOOTH);
 }
 
-void DrawCircle(GLfloat cx, GLfloat cy, int toDraw) {
-	GLfloat r;
-	int num_segments;
-	if(toDraw == 1 || toDraw == 3) {
-		glColor3f(0.91372549019, 0.94901960784, 0.83529411764);
-		r = (toDraw == 1)?40.0:20.0;
-		num_segments = (toDraw == 1)? 1000:500;
-	}
-	else {
-		glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
-		r = (toDraw == 2)?40.0:20.0;
-		num_segments = (toDraw == 2)? 1000:500;
-	}
+void DrawCircle(GLfloat cx, GLfloat cy, GLfloat r, int num_segments, bool color) {
 	float theta = 2 * 3.1415926 / (GLfloat)num_segments; 
 	float tangetial_factor = tanf(theta);//calculate the tangential factor 
 	float radial_factor = cosf(theta);//calculate the radial factor 	
 	GLfloat x = r;//we start at angle = 0 
 	GLfloat y = 0; 
     
-	glBegin(GL_POLYGON); 
+	glBegin(GL_POLYGON);
+	bool shade = false;
 	for(int ii = 0; ii < num_segments; ii++) 
 	{ 
 		glVertex2f(x + cx, y + cy);//output vertex 
@@ -66,6 +58,10 @@ void DrawCircle(GLfloat cx, GLfloat cy, int toDraw) {
 		//correct using the radial factor 
 		x *= radial_factor; 
 		y *= radial_factor; 
+		if(!shade && ii > 2*num_segments/3) {
+			shade = true;
+			glColor3f(0.86274509803, 0.87058823529, 0.85098039215);
+		}
 	} 
 	glEnd(); 
 }
@@ -81,8 +77,21 @@ void display(void) {
 				glVertex2f(vertices[i][j][2], vertices[i][j][3]);
 				glVertex2f(vertices[i][j][2], vertices[i][j][1]);
 			glEnd();
-			if(state[i][j] != 0) {
-				DrawCircle(centres[i][j][0], centres[i][j][1], state[i][j]);
+			if(state[i][j] == 1) {
+				glColor3f(0.5294117647, 0.5294117647, 0.5294117647);
+				DrawCircle(centres[i][j][0], centres[i][j][1], BIG_RADIUS, 2000, true);
+				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
+			} else if(state[i][j] == 2) {
+				glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
+				DrawCircle(centres[i][j][0], centres[i][j][1], BIG_RADIUS, 2000, false);
+				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
+			} else if(nextMove[i][j] == 1) {
+				glColor3f(0.5294117647, 0.5294117647, 0.5294117647);
+				DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, true);
+				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
+			} else if(nextMove[i][j] == 2) {
+				glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
+				DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, false);
 				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
 			}
 		}
@@ -105,7 +114,7 @@ void reshape(int w, int h) {
 int main(int argc, char ** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(700,700);
+	glutInitWindowSize(550,550);
 	glutInitWindowPosition(100,100);
 	glutCreateWindow("Othello Game");
 	init();
@@ -113,8 +122,8 @@ int main(int argc, char ** argv) {
 	glutReshapeFunc(reshape);
 	state[0][0] = 1;
 	state[0][1] = 2;
-	state[0][3] = 3;
-	state[0][4] = 4;
+	nextMove[0][3] = 1;
+	nextMove[0][4] = 2;
 	glutMainLoop();
 	return 0;
 }
