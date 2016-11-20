@@ -233,6 +233,35 @@ double myValue(const v2i &state, const int size, const int depth, const int maxD
 	}
 	return myUtility;
 }
+
+void playMove(v2i &state, const int size, const int player, const int i, const int j) {
+	v2i copy = state;
+	copy[i][j] = player;
+	for(int direct = 0; direct < 8; direct++) {
+		int x = i + dx[direct], y = j + dy[direct];
+		if(x<0 || y<0 || x>=size || y>=size || copy[x][y] == 0 || copy[x][y] == player)
+			continue;
+		bool flag = false;
+		while(x>=0 && y>=0 && x<size && y<size && copy[x][y] != 0) {
+			if(copy[x][y] == player) {
+				flag = true;
+				break;
+			}
+			x += dx[direct];
+			y += dy[direct];
+		}
+		if(!flag)
+			continue;
+		x = i+dx[direct];
+		y = j+dy[direct];
+		while(copy[x][y] != player) {
+			copy[x][y] = player;
+			x += dx[direct];
+			y += dy[direct];
+		}
+	}
+	state = copy;
+}
  
 v2i minimaxDecision(const v2i &state, const int size, const int player, const int maxDepth) {
 	v2i ret = state;

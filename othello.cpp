@@ -1,5 +1,5 @@
 #include <GL/glut.h>
-// #include <bits/stdc++.h>
+#include <bits/stdc++.h>
 #define DIMENSION 8
 #define BIG_RADIUS 33.0
 #define SMALL_RADIUS 20.0
@@ -142,6 +142,8 @@ void actualLocation(int a, int b, GLdouble &x, GLdouble &y, GLdouble &z) {
 }
 
 void mouseHover(int x, int y) {
+	if(currPlayer != 2)
+		return;
 	GLdouble mouseX, mouseY, mouseZ;
 	actualLocation(x, y, mouseX, mouseY, mouseZ);
 	if(mouseX > 835.0 || mouseY > 835.0)
@@ -169,6 +171,27 @@ void mouseHover(int x, int y) {
 	}
 }
 
+void mouseClick(int button, int mouse_state, int x, int y) {
+	if(button != GLUT_LEFT_BUTTON || mouse_state != GLUT_UP || currPlayer != 2)
+		return;
+	GLdouble mouseX, mouseY, mouseZ;
+	actualLocation(x, y, mouseX, mouseY, mouseZ);
+	if(mouseX > 835.0 || mouseY > 835.0)
+		return;
+	int i = 7, j = 0;
+	while(j<DIMENSION && mouseX > vertices[0][j][2])   // x is greater than the right x coordinate of the element
+		j++;
+	while(i>=0 && mouseY > vertices[i][0][3])
+		i--;
+	if(i<0 || i>7 || j<0 || j>7 || nextMove[i][j] != 2)
+		return;
+
+	currPlayer = 1;
+	displayNextMove = false;
+	playMove(state, DIMENSION, 2, i, j);
+	glutPostRedisplay();
+}
+
 void reshape(int w, int h) {
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 	glMatrixMode(GL_PROJECTION);
@@ -190,6 +213,7 @@ int main(int argc, char ** argv) {
 	init();
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
+	glutMouseFunc(mouseClick);
 	glutPassiveMotionFunc(mouseHover);
 	state[3][3] = 1;
 	state[3][4] = 2;
