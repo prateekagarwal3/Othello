@@ -11,6 +11,10 @@ typedef vector<vector<int> > v2i;
 
 v2i state(DIMENSION, vector<int> (DIMENSION, 0));
 v2i nextMove(DIMENSION, vector<int> (DIMENSION, 0));
+bool displayNextMove = false;
+int nextMoveX, nextMoveY;
+bool nextMoveColor;
+
 const GLfloat vertices[DIMENSION][DIMENSION][4] = {  {{0.0,735.0,100.0,835.0},{105.0,735.0,205.0,835.0},{210.0,735.0,310.0,835.0},{315.0,735.0,415.0,835.0},{420.0,735.0,520.0,835.0},{525.0,735.0,625.0,835.0},{630.0,735.0,730.0,835.0},{735.0,735.0,835.0,835.0}},
 													 {{0.0,630.0,100.0,730.0},{105.0,630.0,205.0,730.0},{210.0,630.0,310.0,730.0},{315.0,630.0,415.0,730.0},{420.0,630.0,520.0,730.0},{525.0,630.0,625.0,730.0},{630.0,630.0,730.0,730.0},{735.0,630.0,835.0,730.0}},
 													 {{0.0,525.0,100.0,625.0},{105.0,525.0,205.0,625.0},{210.0,525.0,310.0,625.0},{315.0,525.0,415.0,625.0},{420.0,525.0,520.0,625.0},{525.0,525.0,625.0,625.0},{630.0,525.0,730.0,625.0},{735.0,525.0,835.0,625.0}},
@@ -93,15 +97,16 @@ void display(void) {
 				glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
 				DrawCircle(centres[i][j][0], centres[i][j][1], BIG_RADIUS, 2000, false);
 				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
-			} else if(nextMove[i][j] == 1) {
-				glColor3f(0.5294117647, 0.5294117647, 0.5294117647);
-				DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, true);
-				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
-			} else if(nextMove[i][j] == 2) {
-				glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
-				DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, false);
-				glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
-			}
+			} 
+			// else if(nextMove[i][j] == 1) {
+			// 	glColor3f(0.5294117647, 0.5294117647, 0.5294117647);
+			// 	DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, true);
+			// 	glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
+			// } else if(nextMove[i][j] == 2) {
+			// 	glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
+			// 	DrawCircle(centres[i][j][0], centres[i][j][1], SMALL_RADIUS, 1000, false);
+			// 	glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
+			// }
 			if(dark) {
 				dark = false;
 				glColor3f(0.11764705882, 0.58823529411, 0.13333333333);
@@ -111,7 +116,52 @@ void display(void) {
 			}
 		}
 	}
+	if(displayNextMove) {
+		if(nextMoveColor)
+			glColor3f(0.5294117647, 0.5294117647, 0.5294117647);
+		else
+			glColor3f(0.14117647058, 0.16078431372, 0.09803921568);
+		DrawCircle(centres[nextMoveX][nextMoveY][0], centres[nextMoveX][nextMoveY][1], SMALL_RADIUS, 1000, nextMoveColor);
+	}
 	glutSwapBuffers();
+}
+
+void actualLocation(int a, int b, GLdouble &x, GLdouble &y, GLdouble &z) {
+	GLint viewport[4];
+	GLdouble modelview[16], projection[16];
+	GLdouble wx = a, wy, wz;
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	b = viewport[3]-b;
+	wy = b;
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+	glGetDoublev(GL_PROJECTION_MATRIX, projection);
+	glReadPixels(a, b, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &wz);
+	gluUnProject(wx, wy, wz, modelview, projection, viewport, &x, &y, &z);
+}
+
+void mouseHover(int x, int y) {
+	GLdouble mouseX, mouseY, mouseZ;
+	actualLocation(x, y, mouseX, mouseY, mouseZ);
+	if(mouseX > 835.0 || mouseY > 835.0)
+		return;
+	int i = 0, j = 0;
+	while(i<DIMENSION && mouseX > vertices[0][i][2])      // x is greater than the right x coordinate of the element
+		i++;
+	while(j<DIMENSION && mouseY > vertices[j][0][3])
+		j++;
+	// cout << x << " " << y << " " << i << " " << j << endl;
+	cout << mouseX << " " << mouseY << " " << i << " " << j << endl;
+	if(nextMove[i][j] != 0 && !(displayNextMove && nextMoveX == i && nextMoveY == j && nextMoveColor == 
+															(nextMove[i][j]==1)?true:false)) {
+		displayNextMove = true;
+		nextMoveX = i;
+		nextMoveY = j;
+		nextMoveColor = (nextMove[i][j] == 1)? true:false;
+		glutPostRedisplay();
+	} else if(displayNextMove) {
+		displayNextMove = false;
+		glutPostRedisplay();
+	}
 }
 
 void reshape(int w, int h) {
@@ -135,6 +185,7 @@ int main(int argc, char ** argv) {
 	init();
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
+	glutPassiveMotionFunc(mouseHover);
 	state[0][0] = 1;
 	state[0][1] = 2;
 	nextMove[0][3] = 1;
