@@ -2,18 +2,22 @@
 #include <bits/stdc++.h>
 #include <time.h>
 #define DIMENSION 8
-#define BIG_RADIUS 33.0
-#define SMALL_RADIUS 20.0
-#define DEPTH 5
+#define BIG_RADIUS 40.0
+#define SMALL_RADIUS 27.0
+#define BIG_SEGMENTS 5000
+#define SMALL_SEGMENTS 3000
 #include "ai.h"
 
 using namespace std;
 
+int DEPTH = 5;
+
 typedef vector<vector<int> > v2i;
 
+bool gameStart;   //whether the game has started or not
 v2i state(DIMENSION, vector<int> (DIMENSION, 0));
 v2i nextMove(DIMENSION, vector<int> (DIMENSION, 0));
-bool displayNextMove = false;
+bool displayNextMove = false;   //whether the mouse is at a location where move is possible
 int nextMoveX, nextMoveY;
 bool nextMoveColor;
 
@@ -220,22 +224,68 @@ void reshape(int w, int h) {
 	glLoadIdentity();
 }
 
+void selectOption(int optionSelected) {
+	if(optionSelected == 2)
+		exit(0);
+	if(optionSelected == 1) {
+		if(currPlayer == 2) {
+			currPlayer = 1;
+			displayNextMove = false;
+			minimaxDecision(state, DIMENSION, 2, DEPTH);
+			display();
+			v2i copy(DIMENSION, vector<int> (DIMENSION));  //unused
+			int humanMoves, compMoves;
+			loadNextMoves(state, DIMENSION, 2, copy, humanMoves);  //precomputing human moves for this state
+
+			//number of availabe human moves is always 0 in this do-while loop (except in the first case)
+			do {
+				loadNextMoves(state, DIMENSION, 1, copy, compMoves);
+				if(humanMoves == 0 && compMoves == 0) { //end the program if no moves are left for either player
+					exit(0);
+				}
+				
+				if(nanosleep((const struct timespec[]){{0, 500000000L}}, NULL) < 0)   
+			    {
+			  		printf("Nano sleep system call failed \n");
+			    	exit(0);
+			    }
+			    glutIdleFunc(NULL);
+				minimaxDecision(state, DIMENSION, 1, DEPTH);  //changes state
+
+				loadNextMoves(state, DIMENSION, 2, nextMove, humanMoves); // loading the next available moves
+				display();
+				currPlayer = 2;      //allows next moves to be shown
+			} while(humanMoves == 0);
+		}
+	}
+}
+
 int main(int argc, char ** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowSize(550,550);
 	glutInitWindowPosition(100,100);
 	glutCreateWindow("Othello Game");
+	
+	//the right click menu follows
+	glutCreateMenu(selectOption);
+	glutAddMenuEntry("Autoplay", 1);
+	glutAddMenuEntry("Quit",2);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
 	init();
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutMouseFunc(mouseClick);
 	glutPassiveMotionFunc(mouseHover);
+	
+	//initialization of the game
 	state[3][3] = 1;
 	state[3][4] = 2;
 	state[4][3] = 2;
 	state[4][4] = 1;
 	currPlayer = 2;
+	gameStart = false;
 
 	int unused;  //for next function call
 	loadNextMoves(state, DIMENSION, currPlayer, nextMove, unused);
