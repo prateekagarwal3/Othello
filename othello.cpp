@@ -27,6 +27,7 @@ int DEPTH = 5;
 typedef vector<vector<int> > v2i;
 
 bool gameStart;   //whether the game has started or not
+bool gameFinish;
 v2i defaultState(DIMENSION, vector<int> (DIMENSION, 0));
 v2i state(DIMENSION, vector<int> (DIMENSION, 0));
 v2i nextMove(DIMENSION, vector<int> (DIMENSION, 0));
@@ -115,6 +116,40 @@ void mouseHover(int x, int y) {
 	}
 }
 
+void intToString(int i, string &str) {
+	while(i>0) {
+		str.push_back('0' + i%10); 
+		i/=10;
+	}
+	reverse(str.begin(), str.end());
+}
+
+void showResults(void) {
+	glColor4f(0.0,0.0,0.0,0.8);
+	
+	glBegin(GL_POLYGON);
+		glVertex2f(0.0, 210.0);
+		glVertex2f(0.0, 625.0);
+		glVertex2f(835.0, 625.0);
+		glVertex2f(835.0, 210.0);
+	glEnd();
+	
+	glColor3f(0.98823529411, 0.82352941176, 0.32549019607);
+	int compDisks = disks(state, DIMENSION, 1);
+	int humanDisks = disks(state, DIMENSION, 2);
+	if(compDisks > humanDisks)
+		printString(310.0, 500.0, GLUT_BITMAP_TIMES_ROMAN_24, "YOU LOSE");
+	else if(compDisks < humanDisks)
+		printString(310.0, 500.0, GLUT_BITMAP_TIMES_ROMAN_24, "YOU WIN");
+	else
+		printString(310.0, 500.0, GLUT_BITMAP_TIMES_ROMAN_24, "DRAW");
+	string comp, human;
+	intToString(compDisks, comp);
+	intToString(humanDisks, human);
+	string print = human + " - " + comp;
+	printString(325.0, 400.0, GLUT_BITMAP_TIMES_ROMAN_24, print.c_str());
+}
+
 void computerMoves(void) {  //this function makes computer move while human has no moves remaining
 						//call this function just after human plays and change in state has happened
 	v2i copy(DIMENSION, vector<int> (DIMENSION));  //unused
@@ -126,7 +161,8 @@ void computerMoves(void) {  //this function makes computer move while human has 
 		
 		loadNextMoves(state, DIMENSION, 1, copy, compMoves);
 		if(humanMoves == 0 && compMoves == 0) { //end the program if no moves are left for either player
-			exit(0);
+			gameFinish = true;
+			break;
 		}
 		
 		if(nanosleep((const struct timespec[]){{0, 500000000L}}, NULL) < 0)   
@@ -244,6 +280,49 @@ void welcomeMouseClick(int button, int mouse_state, int x, int y) {
 
 }
 
+void showWelcomeScreen(void) {
+	glColor4f(0.0,0.0,0.0,0.8);
+	
+	glBegin(GL_POLYGON);
+		glVertex2f(0.0, 210.0);
+		glVertex2f(0.0, 625.0);
+		glVertex2f(835.0, 625.0);
+		glVertex2f(835.0, 210.0);
+	glEnd();
+	
+	glColor3f(0.98823529411, 0.82352941176, 0.32549019607);
+	glBegin(GL_LINE_LOOP); //easy
+		glVertex2f(50.0, 250.0);
+		glVertex2f(50.0, 300.0);
+		glVertex2f(150.0, 300.0);
+		glVertex2f(150.0, 250.0);
+	glEnd();
+	glBegin(GL_LINE_LOOP);  //medium
+		glVertex2f(250.0, 250.0);
+		glVertex2f(250.0, 300.0);
+		glVertex2f(350.0, 300.0);
+		glVertex2f(350.0, 250.0);
+	glEnd();
+	glBegin(GL_LINE_LOOP);   //hard
+		glVertex2f(450.0, 250.0);
+		glVertex2f(450.0, 300.0);
+		glVertex2f(550.0, 300.0);
+		glVertex2f(550.0, 250.0);
+	glEnd();
+	glBegin(GL_LINE_LOOP);   //expert
+		glVertex2f(650.0, 250.0);
+		glVertex2f(650.0, 300.0);
+		glVertex2f(750.0, 300.0);
+		glVertex2f(750.0, 250.0);
+	glEnd();
+	printString(50.0, 360.0, GLUT_BITMAP_HELVETICA_18, "Choose the difficulty level:");
+	printString(310.0, 500.0, GLUT_BITMAP_TIMES_ROMAN_24, "OTHELLO");
+	printString(60.0, 260.0, GLUT_BITMAP_HELVETICA_12, "EASY");
+	printString(260.0, 260.0, GLUT_BITMAP_HELVETICA_12, "MEDIUM");
+	printString(460.0, 260.0, GLUT_BITMAP_HELVETICA_12, "HARD");
+	printString(660.0, 260.0, GLUT_BITMAP_HELVETICA_12, "EXPERT");
+}
+
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
@@ -286,49 +365,12 @@ void display(void) {
 		DrawCircle(centres[nextMoveX][nextMoveY][0], centres[nextMoveX][nextMoveY][1], BIG_RADIUS, BIG_SEGMENTS);
 	}
 	if(!gameStart) {
-
-		glColor4f(0.0,0.0,0.0,0.8);
-		
-		glBegin(GL_POLYGON);
-			glVertex2f(0.0, 210.0);
-			glVertex2f(0.0, 625.0);
-			glVertex2f(835.0, 625.0);
-			glVertex2f(835.0, 210.0);
-		glEnd();
-		
-		glColor3f(0.98823529411, 0.82352941176, 0.32549019607);
-		glBegin(GL_LINE_LOOP); //easy
-			glVertex2f(50.0, 250.0);
-			glVertex2f(50.0, 300.0);
-			glVertex2f(150.0, 300.0);
-			glVertex2f(150.0, 250.0);
-		glEnd();
-		glBegin(GL_LINE_LOOP);  //medium
-			glVertex2f(250.0, 250.0);
-			glVertex2f(250.0, 300.0);
-			glVertex2f(350.0, 300.0);
-			glVertex2f(350.0, 250.0);
-		glEnd();
-		glBegin(GL_LINE_LOOP);   //hard
-			glVertex2f(450.0, 250.0);
-			glVertex2f(450.0, 300.0);
-			glVertex2f(550.0, 300.0);
-			glVertex2f(550.0, 250.0);
-		glEnd();
-		glBegin(GL_LINE_LOOP);   //expert
-			glVertex2f(650.0, 250.0);
-			glVertex2f(650.0, 300.0);
-			glVertex2f(750.0, 300.0);
-			glVertex2f(750.0, 250.0);
-		glEnd();
-		printString(50.0, 360.0, GLUT_BITMAP_HELVETICA_18, "Choose the difficulty level:");
-		printString(310.0, 500.0, GLUT_BITMAP_TIMES_ROMAN_24, "OTHELLO");
-		printString(60.0, 260.0, GLUT_BITMAP_HELVETICA_12, "EASY");
-		printString(260.0, 260.0, GLUT_BITMAP_HELVETICA_12, "MEDIUM");
-		printString(460.0, 260.0, GLUT_BITMAP_HELVETICA_12, "HARD");
-		printString(660.0, 260.0, GLUT_BITMAP_HELVETICA_12, "EXPERT");
-		
+		showWelcomeScreen();
 		glutMouseFunc(welcomeMouseClick);
+	}
+	if(gameFinish && gameStart) {
+		showResults();
+
 	}
 	glutSwapBuffers();
 }
@@ -363,7 +405,7 @@ int main(int argc, char ** argv) {
 	defaultState[4][4] = 1;
 	state = defaultState;
 	currPlayer = 2;
-	gameStart = false;
+	gameStart = gameFinish = false;
 
 	//the right click menu follows
 	glutCreateMenu(selectOption);

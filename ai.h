@@ -5,5 +5,6 @@ void loadNextMoves(const std::vector<std::vector<int> > &, const int, int, std::
 void playMove(std::vector<std::vector<int> > &, const int, const int, const int, const int);
 void minimaxDecision(std::vector<std::vector<int> > &, const int, const int, const int);
 void printState(const std::vector<std::vector<int> > &, const int);
+int disks(const std::vector<std::vector<int> > &, const int, const int);
 
 #endif
