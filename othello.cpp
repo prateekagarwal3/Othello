@@ -124,7 +124,33 @@ void intToString(int i, string &str) {
 	reverse(str.begin(), str.end());
 }
 
-void showResults(void) {
+void resultMouseClick(int button, int mouse_state, int x, int y) {
+	if(button != GLUT_LEFT_BUTTON || mouse_state != GLUT_UP)
+		return;
+	GLdouble mouseX, mouseY, mouseZ;
+	actualLocation(x, y, mouseX, mouseY, mouseZ);
+	if(mouseX > 835.0 || mouseY > 835.0)
+		return;
+	if(mouseY > 300 || mouseY < 250)
+		return;
+	if( (mouseX>250 && mouseX<350) || (mouseX>450 && mouseX<550) ) {
+
+		if(mouseX>250 && mouseX<350) {
+			state = defaultState;
+			glutMouseFunc(NULL);
+			glutPassiveMotionFunc(NULL);
+			currPlayer = 2;
+			gameStart = gameFinish = false;
+			display();
+			return;
+		}
+		else if(mouseX>450 && mouseX<550)
+			exit(0);
+	}
+
+}
+
+void showResults(void) {        //utility function for display(), never call display() from it
 	glColor4f(0.0,0.0,0.0,0.8);
 	
 	glBegin(GL_POLYGON);
@@ -133,8 +159,21 @@ void showResults(void) {
 		glVertex2f(835.0, 625.0);
 		glVertex2f(835.0, 210.0);
 	glEnd();
-	
+
 	glColor3f(0.98823529411, 0.82352941176, 0.32549019607);
+	glBegin(GL_LINE_LOOP);  //Restart
+		glVertex2f(250.0, 250.0);
+		glVertex2f(250.0, 300.0);
+		glVertex2f(350.0, 300.0);
+		glVertex2f(350.0, 250.0);
+	glEnd();
+	glBegin(GL_LINE_LOOP);   //Quit
+		glVertex2f(450.0, 250.0);
+		glVertex2f(450.0, 300.0);
+		glVertex2f(550.0, 300.0);
+		glVertex2f(550.0, 250.0);
+	glEnd();
+	
 	int compDisks = disks(state, DIMENSION, 1);
 	int humanDisks = disks(state, DIMENSION, 2);
 	if(compDisks > humanDisks)
@@ -148,6 +187,8 @@ void showResults(void) {
 	intToString(humanDisks, human);
 	string print = human + " - " + comp;
 	printString(325.0, 400.0, GLUT_BITMAP_TIMES_ROMAN_24, print.c_str());
+	printString(260.0, 260.0, GLUT_BITMAP_HELVETICA_12, "RESTART");
+	printString(460.0, 260.0, GLUT_BITMAP_HELVETICA_12, "QUIT");
 }
 
 void computerMoves(void) {  //this function makes computer move while human has no moves remaining
@@ -162,6 +203,7 @@ void computerMoves(void) {  //this function makes computer move while human has 
 		loadNextMoves(state, DIMENSION, 1, copy, compMoves);
 		if(humanMoves == 0 && compMoves == 0) { //end the program if no moves are left for either player
 			gameFinish = true;
+			display();
 			break;
 		}
 		
@@ -280,7 +322,7 @@ void welcomeMouseClick(int button, int mouse_state, int x, int y) {
 
 }
 
-void showWelcomeScreen(void) {
+void showWelcomeScreen(void) {      //utility function for display(), never call display() from it
 	glColor4f(0.0,0.0,0.0,0.8);
 	
 	glBegin(GL_POLYGON);
@@ -368,9 +410,9 @@ void display(void) {
 		showWelcomeScreen();
 		glutMouseFunc(welcomeMouseClick);
 	}
-	if(gameFinish && gameStart) {
+	if(gameFinish) {
 		showResults();
-
+		glutMouseFunc(resultMouseClick);
 	}
 	glutSwapBuffers();
 }
@@ -405,7 +447,7 @@ int main(int argc, char ** argv) {
 	defaultState[4][4] = 1;
 	state = defaultState;
 	currPlayer = 2;
-	gameStart = gameFinish = false;
+	gameStart = gameFinish = true;
 
 	//the right click menu follows
 	glutCreateMenu(selectOption);
