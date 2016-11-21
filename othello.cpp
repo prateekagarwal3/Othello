@@ -315,6 +315,10 @@ void welcomeMouseClick(int button, int mouse_state, int x, int y) {
 		glutMouseFunc(mouseClick);
 		glutPassiveMotionFunc(mouseHover);
 		
+		int unused;  //for next function call
+		loadNextMoves(state, DIMENSION, currPlayer, nextMove, unused);
+		//initialization ends
+		
 		gameStart = true;
 
 		display();
@@ -447,17 +451,13 @@ int main(int argc, char ** argv) {
 	defaultState[4][4] = 1;
 	state = defaultState;
 	currPlayer = 2;
-	gameStart = gameFinish = true;
+	gameStart = gameFinish = false;
 
 	//the right click menu follows
 	glutCreateMenu(selectOption);
 	glutAddMenuEntry("Autoplay", 1);
 	glutAddMenuEntry("Quit",2);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
-
-	int unused;  //for next function call
-	loadNextMoves(state, DIMENSION, currPlayer, nextMove, unused);
-	//initialization ends
 
 	glutMainLoop();
 	return 0;
