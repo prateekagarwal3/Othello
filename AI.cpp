@@ -106,7 +106,7 @@ double eval(const v2i &board, const int size) {
 	double Disks = ((double)(diskMax - diskMin))/((double)(diskMax+diskMin));
 	double Moves = (moveMax + moveMin != 0)? ((double)(moveMax - moveMin))/((double)(moveMax+moveMin)) : 0;
 	double Corners = (cornerMax + cornerMin != 0)? ((double)(cornerMax - cornerMin))/((double)(cornerMax+cornerMin)) : 0;
-	return Disks + 100*Moves + 1000*Corners;
+	return Disks + 100 * Moves + 1000 * Corners;
 }
 
 void loadNextMoves(const v2i &state, const int size, int player, v2i &nextMove, int &moveCount) {
