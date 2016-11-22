@@ -4,7 +4,9 @@ It is platform specific (Linux). (Remove nanosleep calls to make it platform ind
 # Installation
 Make sure OpenGL is installed. For Linux:
 	
-	sudo apt-get install freeglut3-dev
+	sudo apt-get install build-essential
+	sudo apt-get install freeglut3 freeglut3-dev
+	sudo apt-get install binutils-gold
 
 Move to the cloned directory and do:
 
