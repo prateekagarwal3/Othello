@@ -1,5 +1,5 @@
 /*
- * board dimension is 835*835
+ * board dimensions: 835*835
 */
 
 #include <GL/glut.h>
@@ -17,7 +17,8 @@
 #define MEDIUM 3
 #define HARD 5
 #define EXPERT 7
-
+//sleep time between moves in nanoseconds
+#define SLEEP_TIME 500000000L
 #include "ai.h"
 
 using namespace std;
@@ -27,7 +28,8 @@ int DEPTH = 5;
 typedef vector<vector<int> > v2i;
 
 bool gameStart;   //whether the game has started or not
-bool gameFinish;
+bool gameFinish;  //whether the game has finished or not
+bool thinking;	  //whether the computer is thinking or not
 v2i defaultState(DIMENSION, vector<int> (DIMENSION, 0));
 v2i state(DIMENSION, vector<int> (DIMENSION, 0));
 v2i nextMove(DIMENSION, vector<int> (DIMENSION, 0));
@@ -124,6 +126,15 @@ void intToString(int i, string &str) {
 	reverse(str.begin(), str.end());
 }
 
+void restart(void) {
+	state = defaultState;
+	glutMouseFunc(NULL);
+	glutPassiveMotionFunc(NULL);
+	currPlayer = 2;
+	gameStart = gameFinish = thinking = false;
+	display();
+}
+
 void resultMouseClick(int button, int mouse_state, int x, int y) {
 	if(button != GLUT_LEFT_BUTTON || mouse_state != GLUT_UP)
 		return;
@@ -136,12 +147,7 @@ void resultMouseClick(int button, int mouse_state, int x, int y) {
 	if( (mouseX>250 && mouseX<350) || (mouseX>450 && mouseX<550) ) {
 
 		if(mouseX>250 && mouseX<350) {
-			state = defaultState;
-			glutMouseFunc(NULL);
-			glutPassiveMotionFunc(NULL);
-			currPlayer = 2;
-			gameStart = gameFinish = false;
-			display();
+			restart();
 			return;
 		}
 		else if(mouseX>450 && mouseX<550)
@@ -207,13 +213,15 @@ void computerMoves(void) {  //this function makes computer move while human has 
 			break;
 		}
 		
-		if(nanosleep((const struct timespec[]){{0, 500000000L}}, NULL) < 0)   
+	    thinking = true;
+	    display();
+	    if(nanosleep((const struct timespec[]){{0, SLEEP_TIME}}, NULL) < 0)   
 	    {
 	  		printf("Nano sleep system call failed \n");
 	    	exit(0);
 	    }
 		minimaxDecision(state, DIMENSION, 1, DEPTH);  //changes state
-
+		thinking = false;
 		loadNextMoves(state, DIMENSION, 2, nextMove, humanMoves); // loading the next available human moves
 		
 		display();
@@ -241,7 +249,11 @@ void mouseClick(int button, int mouse_state, int x, int y) {
 	displayNextMove = false;
 	playMove(state, DIMENSION, 2, i, j);
 	display();
-
+	if(nanosleep((const struct timespec[]){{0, SLEEP_TIME}}, NULL) < 0)   
+    {
+  		printf("Nano sleep system call failed \n");
+    	exit(0);
+    }
 	computerMoves();
 }
 
@@ -253,10 +265,28 @@ void selectOption(int optionSelected) {
 			return;
 		currPlayer = 1;
 		displayNextMove = false;
-		minimaxDecision(state, DIMENSION, 2, DEPTH);
+
+		thinking = true;
 		display();
-		
+		if(nanosleep((const struct timespec[]){{0, SLEEP_TIME}}, NULL) < 0)   
+	    {
+	  		printf("Nano sleep system call failed \n");
+	    	exit(0);
+	    }
+		minimaxDecision(state, DIMENSION, 2, DEPTH);
+		thinking = false;
+		display();
+		if(nanosleep((const struct timespec[]){{0, SLEEP_TIME}}, NULL) < 0)   
+	    {
+	  		printf("Nano sleep system call failed \n");
+	    	exit(0);
+	    }
 		computerMoves();
+		return;
+	}
+	if(optionSelected == 3) {  //restart
+		restart();
+		return;
 	}
 }
 
@@ -320,6 +350,8 @@ void welcomeMouseClick(int button, int mouse_state, int x, int y) {
 		//initialization ends
 		
 		gameStart = true;
+		thinking = false;
+		gameFinish = false;
 
 		display();
 	}
@@ -418,6 +450,18 @@ void display(void) {
 		showResults();
 		glutMouseFunc(resultMouseClick);
 	}
+	if(thinking) {
+		glColor4f(0.87843137254, 0.85882352941, 0.21960784313, 0.4);
+		glBegin(GL_POLYGON);
+			glVertex2f(1.0, 600.0);
+			glVertex2f(1.0, 834.0);
+			glVertex2f(300.0, 834.0);
+			glVertex2f(300.0, 600.0);
+		glEnd();
+		glColor3f(0.19215686274, 0.14117647058, 0.45098039215);
+		printString(110.0, 750.0, GLUT_BITMAP_TIMES_ROMAN_24, "?");
+		printString(40.0, 680.0, GLUT_BITMAP_TIMES_ROMAN_24, "THINKING");
+	}
 	glutSwapBuffers();
 }
 
@@ -425,6 +469,7 @@ void reshape(int w, int h) {
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	//projecting according to the window size while preserving the aspect ratio
 	if (w <= h)
  		gluOrtho2D(0.0, 835.0, 0.0, 835.0*(GLfloat) h/(GLfloat) w);
  	else
@@ -451,11 +496,12 @@ int main(int argc, char ** argv) {
 	defaultState[4][4] = 1;
 	state = defaultState;
 	currPlayer = 2;
-	gameStart = gameFinish = false;
+	gameStart = gameFinish = thinking = false;
 
 	//the right click menu follows
 	glutCreateMenu(selectOption);
 	glutAddMenuEntry("Autoplay", 1);
+	glutAddMenuEntry("Restart", 3);
 	glutAddMenuEntry("Quit",2);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
