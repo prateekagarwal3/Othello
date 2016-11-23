@@ -15,8 +15,8 @@
 //depths for each difficulty level
 #define EASY 2
 #define MEDIUM 3
-#define HARD 5
-#define EXPERT 7
+#define HARD 4
+#define EXPERT 5
 //sleep time between moves in nanoseconds
 #define SLEEP_TIME 500000000L
 #include "ai.h"
