@@ -11,7 +11,7 @@ typedef vector<vector<int> > v2i;
 const int dx[] = {0, 1, 1, 1, 0, -1, -1, -1};
 const int dy[] = {1, 1, 0, -1, -1, -1, 0, 1};
  
-void printState(const v2i &board, const int size) {
+void printState(const v2i &board, const int size) {   //prints the vector
 	for(int i = 0; i<size; i++) {
 		for(int j = 0; j<size; j++) {
 			printf("%d ", board[i][j]);
@@ -21,7 +21,7 @@ void printState(const v2i &board, const int size) {
 	printf("-\n");
 }
  
-bool fillCheck(const v2i &board, const int size) {
+bool fillCheck(const v2i &board, const int size) {  //checks if the board is completely filled
 	for(int i = 0; i<size; i++) {
 		for(int j = 0; j<size; j++)
 			if(board[i][j] == 0)
@@ -30,7 +30,7 @@ bool fillCheck(const v2i &board, const int size) {
 	return true;
 }
 
-int disks(const v2i &board, const int size, const int player) {
+int disks(const v2i &board, const int size, const int player) {   //calculates the no. of disks
 	int count = 0;
 	for(int i = 0; i<size; i++) {
 		for(int j = 0; j<size; j++) {
@@ -41,7 +41,7 @@ int disks(const v2i &board, const int size, const int player) {
 	return count;
 }
  
-int corner(const v2i &board, const int size, const int player) {
+int corner(const v2i &board, const int size, const int player) {  //calculates no. of corners
 	int count = 0;
 	if(board[0][0] == player)
 		count++;
@@ -54,7 +54,7 @@ int corner(const v2i &board, const int size, const int player) {
 	return count;
 }
  
-double eval(const v2i &board, const int size) {
+double eval(const v2i &board, const int size) {     //returns the evaluation of a state at cutoff
 	vector<vector<bool> > moveToMax(size, vector<bool>(size, false));
 	vector<vector<bool> > moveToMin(size, vector<bool>(size, false));
 	int moveMax = 0, moveMin = 0, diskMax = 0, diskMin = 0;
@@ -109,7 +109,7 @@ double eval(const v2i &board, const int size) {
 	return Disks + 100 * Moves + 1000 * Corners;
 }
 
-void loadNextMoves(const v2i &state, const int size, int player, v2i &nextMove, int &moveCount) {
+void loadNextMoves(const v2i &state, const int size, int player, v2i &nextMove, int &moveCount) {//loads the next available moves
 	moveCount = 0;
 	vector<vector<bool> > moveTo(size, vector<bool>(size, false));
 	for(int i = 0; i<size; i++) {
@@ -144,6 +144,7 @@ void loadNextMoves(const v2i &state, const int size, int player, v2i &nextMove, 
 	}
 }
 
+//minimax algorithm
 double myValue(const v2i &state, const int size, const int depth, const int maxDepth, v2i &myState, const int player, double alpha, double beta) {
 	// cout << "maxvalue depth: " << depth << endl;
 	if(fillCheck(state, size))
@@ -226,6 +227,7 @@ double myValue(const v2i &state, const int size, const int depth, const int maxD
 	return myUtility;
 }
 
+//updates the state to reflect a move
 void playMove(v2i &state, const int size, const int player, const int i, const int j) {
 	v2i copy = state;
 	copy[i][j] = player;
@@ -254,7 +256,8 @@ void playMove(v2i &state, const int size, const int player, const int i, const i
 	}
 	state = copy;
 }
- 
+
+//returns the best available move
 void minimaxDecision(v2i &state, const int size, const int player, const int maxDepth) {
 	v2i ret = state;
 	myValue(state, size, 1, maxDepth, ret, player, INT_MIN, INT_MAX);

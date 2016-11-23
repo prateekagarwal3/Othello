@@ -34,10 +34,10 @@ v2i defaultState(DIMENSION, vector<int> (DIMENSION, 0));
 v2i state(DIMENSION, vector<int> (DIMENSION, 0));
 v2i nextMove(DIMENSION, vector<int> (DIMENSION, 0));
 bool displayNextMove = false;   //whether the mouse is at a location where move is possible
-int nextMoveX, nextMoveY;
+int nextMoveX, nextMoveY;      //coordinates of the highlighted move
 bool nextMoveColor;
 
-int currPlayer;
+int currPlayer;  //the current player
 
 const GLfloat vertices[DIMENSION][DIMENSION][4] = {  {{0.0,735.0,100.0,835.0},{105.0,735.0,205.0,835.0},{210.0,735.0,310.0,835.0},{315.0,735.0,415.0,835.0},{420.0,735.0,520.0,835.0},{525.0,735.0,625.0,835.0},{630.0,735.0,730.0,835.0},{735.0,735.0,835.0,835.0}},
 													 {{0.0,630.0,100.0,730.0},{105.0,630.0,205.0,730.0},{210.0,630.0,310.0,730.0},{315.0,630.0,415.0,730.0},{420.0,630.0,520.0,730.0},{525.0,630.0,625.0,730.0},{630.0,630.0,730.0,730.0},{735.0,630.0,835.0,730.0}},
@@ -65,7 +65,7 @@ void init(void) {
 	glEnable(GL_BLEND);
 }
 
-void printString(GLfloat x, GLfloat y, void *font, const char *str) {
+void printString(GLfloat x, GLfloat y, void *font, const char *str) { //renders a string in the window
 	glRasterPos2f(x, y);
 	int i = 0;
 	while(str[i]) {
@@ -76,7 +76,7 @@ void printString(GLfloat x, GLfloat y, void *font, const char *str) {
 
 void display(void); //function declaration
 
-void actualLocation(int a, int b, GLdouble &x, GLdouble &y, GLdouble &z) {
+void actualLocation(int a, int b, GLdouble &x, GLdouble &y, GLdouble &z) {  //takes in the pixels and returns actual unprojected position
 	GLint viewport[4];
 	GLdouble modelview[16], projection[16];
 	GLdouble wx = a, wy, wz;
@@ -89,7 +89,7 @@ void actualLocation(int a, int b, GLdouble &x, GLdouble &y, GLdouble &z) {
 	gluUnProject(wx, wy, wz, modelview, projection, viewport, &x, &y, &z);
 }
 
-void mouseHover(int x, int y) {
+void mouseHover(int x, int y) {       //callback function for passivemotion
 	if(currPlayer != 2)
 		return;
 	GLdouble mouseX, mouseY, mouseZ;
@@ -118,7 +118,7 @@ void mouseHover(int x, int y) {
 	}
 }
 
-void intToString(int i, string &str) {
+void intToString(int i, string &str) {   //converts int to string
 	if(i==0) {
 		str = "0";
 		return;
@@ -130,7 +130,7 @@ void intToString(int i, string &str) {
 	reverse(str.begin(), str.end());
 }
 
-void restart(void) {
+void restart(void) {        //restarts the game
 	state = defaultState;
 	glutMouseFunc(NULL);
 	glutPassiveMotionFunc(NULL);
@@ -139,7 +139,7 @@ void restart(void) {
 	display();
 }
 
-void resultMouseClick(int button, int mouse_state, int x, int y) {
+void resultMouseClick(int button, int mouse_state, int x, int y) {  //callback for mouse clicks on results screen
 	if(button != GLUT_LEFT_BUTTON || mouse_state != GLUT_UP)
 		return;
 	GLdouble mouseX, mouseY, mouseZ;
@@ -234,7 +234,7 @@ void computerMoves(void) {  //this function makes computer move while human has 
 	} while(humanMoves == 0);
 }
 
-void mouseClick(int button, int mouse_state, int x, int y) {
+void mouseClick(int button, int mouse_state, int x, int y) { //callback for mouse clicks
 	if(button != GLUT_LEFT_BUTTON || mouse_state != GLUT_UP || currPlayer != 2)
 		return;
 	GLdouble mouseX, mouseY, mouseZ;
@@ -261,7 +261,7 @@ void mouseClick(int button, int mouse_state, int x, int y) {
 	computerMoves();
 }
 
-void selectOption(int optionSelected) {
+void selectOption(int optionSelected) {   //right click option menu
 	if(optionSelected == 2)   //quit
 		exit(0);
 	if(optionSelected == 1) { //autoplay
@@ -294,7 +294,7 @@ void selectOption(int optionSelected) {
 	}
 }
 
-void DrawCircle(GLfloat cx, GLfloat cy, GLfloat r, int num_segments) {
+void DrawCircle(GLfloat cx, GLfloat cy, GLfloat r, int num_segments) {  //renders a circle onto the screen
 	float theta = 2 * 3.1415926 / (GLfloat)num_segments; 
 	float tangetial_factor = tanf(theta);//calculate the tangential factor 
 	float radial_factor = cosf(theta);//calculate the radial factor 	
@@ -325,7 +325,7 @@ void DrawCircle(GLfloat cx, GLfloat cy, GLfloat r, int num_segments) {
 	glEnd(); 
 }
 
-void welcomeMouseClick(int button, int mouse_state, int x, int y) {
+void welcomeMouseClick(int button, int mouse_state, int x, int y) {  //mouse click callback on welcome screen
 	if(button != GLUT_LEFT_BUTTON || mouse_state != GLUT_UP || gameStart == true)
 		return;
 	GLdouble mouseX, mouseY, mouseZ;
@@ -405,7 +405,7 @@ void showWelcomeScreen(void) {      //utility function for display(), never call
 	printString(660.0, 260.0, GLUT_BITMAP_HELVETICA_12, "EXPERT");
 }
 
-void display(void) {
+void display(void) {       //callback for display
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(0.09411764705, 0.52156862745, 0.09411764705);
 	for(int i = 0; i<DIMENSION; i++) {
@@ -469,7 +469,7 @@ void display(void) {
 	glutSwapBuffers();
 }
 
-void reshape(int w, int h) {
+void reshape(int w, int h) { //callback function for reshape
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
