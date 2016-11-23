@@ -119,6 +119,10 @@ void mouseHover(int x, int y) {
 }
 
 void intToString(int i, string &str) {
+	if(i==0) {
+		str = "0";
+		return;
+	}
 	while(i>0) {
 		str.push_back('0' + i%10); 
 		i/=10;
