@@ -1,6 +1,6 @@
 # Introduction
 This repository contains a C++/OpenGL implementation of Othello(Reversi) game.
-It is platform specific (Linux). (Remove nanosleep calls to make it platform independent).
+It is platform specific (Linux). You can remove nanosleep calls to make it platform independent.
 # Installation
 Make sure OpenGL is installed. For Linux:
 	
