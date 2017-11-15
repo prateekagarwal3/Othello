@@ -1,5 +1,5 @@
 CC = g++
-LDFLAGS = -Wall
+LDFLAGS = -Wall -std=c++0x -pthread
 GLUFLAGS = -lGL -lGLU -lglut
 
 game : AI.o othello.o
