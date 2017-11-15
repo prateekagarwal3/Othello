@@ -363,6 +363,7 @@ void selectOption(int optionSelected) {   //right click option menu
 	if(optionSelected == 4) {  //simulation
 		if(currPlayer != 2)
 			return;
+		displayNextMove = false;
 		glutMouseFunc(NULL);
 		glutPassiveMotionFunc(NULL);
 		thread simulation(simulate);
