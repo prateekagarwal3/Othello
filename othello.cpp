@@ -4,6 +4,7 @@
 
 #include <GL/glut.h>
 #include <bits/stdc++.h>
+#include <thread>
 #include <time.h>
 #define DIMENSION 8
 //radii of circles
@@ -104,7 +105,7 @@ void mouseHover(int x, int y) {       //callback function for passivemotion
 	if(i<0 || i>7 || j<0 || j>7)
 		return;
 	if( nextMove[i][j] != 0) {
-		if(displayNextMove && nextMoveX == i && nextMoveY == j 
+		if(displayNextMove && nextMoveX == i && nextMoveY == j  //check if the particular box is already being highlighted
 			&& nextMoveColor == (nextMove[i][j]==1)?true:false)
 			return;
 		displayNextMove = true;
@@ -112,7 +113,7 @@ void mouseHover(int x, int y) {       //callback function for passivemotion
 		nextMoveY = j;
 		nextMoveColor = (nextMove[i][j] == 1)? true:false;
 		display();
-	} else if(displayNextMove) {
+	} else if(displayNextMove) {   //a box was being highlighted, stop now
 		displayNextMove = false;
 		display();
 	}
@@ -201,6 +202,39 @@ void showResults(void) {        //utility function for display(), never call dis
 	printString(460.0, 260.0, GLUT_BITMAP_HELVETICA_12, "QUIT");
 }
 
+// void computerMoves(void) {  //this function makes computer move while human has no moves remaining
+// 						//call this function just after human plays and change in state has happened
+// 	v2i copy(DIMENSION, vector<int> (DIMENSION));  //unused
+// 	int humanMoves, compMoves;
+// 	loadNextMoves(state, DIMENSION, 2, copy, humanMoves);  //precomputing human moves for this state
+
+// 	//number of availabe human moves is always 0 in this do-while loop (except in the first case)
+// 	do {
+		
+// 		loadNextMoves(state, DIMENSION, 1, copy, compMoves);
+// 		if(humanMoves == 0 && compMoves == 0) { //end the program if no moves are left for either player
+// 			gameFinish = true;
+// 			display();
+// 			break;
+// 		}
+		
+// 	    thinking = true;
+// 	    display();
+// 	    if(nanosleep((const struct timespec[]){{0, SLEEP_TIME}}, NULL) < 0)   
+// 	    {
+// 	  		printf("Nano sleep system call failed \n");
+// 	    	exit(0);
+// 	    }
+// 		minimaxDecision(state, DIMENSION, 1, DEPTH);  //changes state
+// 		thinking = false;
+// 		loadNextMoves(state, DIMENSION, 2, nextMove, humanMoves); // loading the next available human moves
+		
+// 		display();
+// 		currPlayer = 2;      //allows next moves to be shown
+	
+// 	} while(humanMoves == 0);
+// }
+
 void computerMoves(void) {  //this function makes computer move while human has no moves remaining
 						//call this function just after human plays and change in state has happened
 	v2i copy(DIMENSION, vector<int> (DIMENSION));  //unused
@@ -261,6 +295,44 @@ void mouseClick(int button, int mouse_state, int x, int y) { //callback for mous
 	computerMoves();
 }
 
+void simulate() {
+	v2i copy(DIMENSION, vector<int>(DIMENSION));
+	int playerMoves, iterationsWithoutMove = 0;
+	while(true) {
+		loadNextMoves(state, DIMENSION, currPlayer, copy, playerMoves);
+		if(playerMoves == 0) {
+			iterationsWithoutMove++;
+			if(iterationsWithoutMove >= 2) { //both players can't move, stop the game
+				gameFinish = true;
+				//display();
+				return;
+			}
+			continue;
+		}
+		thinking = true;
+	    copy = state;
+	    thread ai_thread(minimaxDecision, ref(copy), DIMENSION, currPlayer, DEPTH);
+	    //display();
+	    if(nanosleep((const struct timespec[]){{0, SLEEP_TIME}}, NULL) < 0)   
+	    {
+	  		printf("Nano sleep system call failed \n");
+	    	exit(0);
+	    }
+	    ai_thread.join();
+	    thinking = false;    //since thread is joined, computation must be complete at this point
+	    state = copy;
+	    //minimaxDecision(state, DIMENSION, currPlayer, DEPTH);  //changes state
+
+		//display();
+		if(nanosleep((const struct timespec[]){{0, SLEEP_TIME}}, NULL) < 0)   
+	    {
+	  		printf("Nano sleep system call failed \n");
+	    	exit(0);
+	    }
+		currPlayer = (currPlayer==1) ? 2 : 1;
+	}
+}
+
 void selectOption(int optionSelected) {   //right click option menu
 	if(optionSelected == 2)   //quit
 		exit(0);
@@ -286,6 +358,18 @@ void selectOption(int optionSelected) {   //right click option menu
 	    	exit(0);
 	    }
 		computerMoves();
+		return;
+	}
+	if(optionSelected == 4) {  //simulation
+		if(currPlayer != 2)
+			return;
+		displayNextMove = false;
+		glutMouseFunc(NULL);
+		glutPassiveMotionFunc(NULL);
+		thread simulation(simulate);
+		simulation.detach();
+		//simulate();
+		//simulation.join();
 		return;
 	}
 	if(optionSelected == 3) {  //restart
@@ -482,6 +566,10 @@ void reshape(int w, int h) { //callback function for reshape
 	glLoadIdentity();
 }
 
+void idleFunc(void) {
+	display();
+}
+
 int main(int argc, char ** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
@@ -492,6 +580,7 @@ int main(int argc, char ** argv) {
 	init();
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
+	glutIdleFunc(idleFunc);
 	
 	//initialization of the game
 	defaultState[3][3] = 1;
@@ -504,6 +593,7 @@ int main(int argc, char ** argv) {
 
 	//the right click menu follows
 	glutCreateMenu(selectOption);
+	glutAddMenuEntry("Simulate", 4);
 	glutAddMenuEntry("Autoplay", 1);
 	glutAddMenuEntry("Restart", 3);
 	glutAddMenuEntry("Quit",2);
